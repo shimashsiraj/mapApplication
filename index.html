@@ -1,0 +1,407 @@
+<!-- StAuth10244: I Mohamed Shimash Mohamed Sirajul Hasan, 000899687 certify that this material is my original work. No other person's work has been used without due acknowledgement. I have not made my work available to anyone else. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toronto Tourist Guide - Map Application</title>
+    <!-- link for bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css
+    ">
+    <!-- coordinates javascript file -->
+    <script src="coordinates.js"></script>
+    <!-- css style -->
+    <style>
+        #map{
+            height: 500px;
+            width: 100%;
+        }
+
+        h2{
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+
+        /* style for medium and larger screens */
+        @media (min-width: 768px) {
+            .r-1 .b{
+                text-align: center;
+                background-color: rgb(235, 238, 170);
+                margin: .5em;
+                padding: 1em;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .r-2 .a{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .r-2 .a button{
+                display: inline-block;
+                margin-top: 1em;
+            }
+        }
+        /* style for smaller screens */
+        @media (max-width: 576px) {
+            #map {
+                height: 300px;
+                margin-bottom: 1em;
+            }
+
+            h4{
+                text-align: center;
+            }
+
+            h2{
+                font-size: 1.3em;
+            }
+
+            .r-1 .a, .r-1 .b{
+                border: 2px solid black;
+            }
+            .r-1 .a{
+                background-color: rgb(224, 231, 189);
+                margin: .5em;
+            }
+            
+
+            .r-1 .b{
+                text-align: center;
+                background-color: rgb(235, 238, 170);
+                margin: .5em;
+                padding: 1em;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .container .r-2 .a{
+                text-align: center;
+                
+                margin: .5em;
+                padding: 1em;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .container .r-2 .a button{
+                display: block;
+                text-align: center;
+                margin-bottom: 1em;
+            }
+
+            .r-2 .b{
+                margin: .5em;
+                padding: 1em;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background-color: rgb(152, 198, 169);
+            }
+            .r-2 .b button{
+                margin-top: 1em;
+                display: block;
+                margin-bottom: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    
+    <!-- Google Maps KEY -->
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCHr5V_VvPQsxTYJRlhAC_JNVo0dUzgilo&loading=async&callback=initMap&libraries=marker"></script>
+    
+    
+
+    <!-- navigation bar with the welcome text-->
+    <nav class="bg-dark">
+        <div class="container text-warning p-2">
+            <h4>Welcome to the Map Application</h4>
+        </div>
+    </nav>
+
+    <!-- main content -->
+    <div class="container mt-3">
+
+        <!-- heading for the map guide -->
+        <h2>Simple Map Guide for Tourist in Toronto</h2>
+        <div class="r-1 row justify-content-center">
+            <!-- column for the display of the map -->
+            <div class="col">
+                <div id="map"></div>
+            </div>
+
+            <div class="col-sm-5 col-md-4 m-2 border">
+
+                <!-- details about the selected location -->
+                <div class="a row">
+                    <h3 id="details" class="mt-2 text-center">Title</h3>
+                    <i><p>Category: <span id="category"></span></p></i>
+                    <p><strong>Address: <span id="address"></span></strong></p>
+                    <p><strong>Description: <span id="description"></span></strong></p>
+                    
+                </div>
+
+                <!-- directions interface -->
+                <div class="b row">
+                    <h3>Directions</h3>
+                    <p>Directions from user's current location</p>
+                    <select name="" id="destinationSelection" class="rounded p-2 m-2 w-75">
+                        <option value="">Select Destination</option>
+                    </select>
+                    <button id="showDirections" class="rounded p-1 m-2 bg-dark text-light w-75">Show Directions</button>
+                    <span id="directions"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- row containing buttons for filtering and address search -->
+        <div class="r-2 row justify-content-between mt-4">
+            <div class="a col-md-5 m-1 p-2 rounded">
+                <button id="showStations" style="margin-right: 1em; border: none; outline: none;" class="p-2 rounded bg-warning text-dark w-75">Show Only Subway Stations</button>
+                <button id="showAttractions" style="margin-right: 1em; border: none; outline: none;" class="p-2 rounded bg-warning text-dark w-75">Show Only Attractions</button>
+                <button id="showAll" style="margin-right: 1em; border: none; outline: none;" class="p-2 rounded bg-primary text-light w-75">Show All</button>
+                <button id="locateMe" style="border: none; outline: none; margin-right: 1.3em;" class="p-2 rounded border bg-secondary text-light w-50 mt-3">Locate Me</button>
+            </div>
+
+            <!-- user input for searching address -->
+            <div class="b col-md-6 m-1 p-2 rounded">
+                <input id="userAddress" type="text" style="border: none; outline: none; margin-right: 1em;" class="p-2 rounded border w-75" placeholder="135 Fennell Ave, Hamilton">
+                <button id="searchUserAddress" style="border: none; outline: none;" class="p-2 rounded border bg-success text-light">Search Address</button>
+                <span id="coords"></span>
+            </div>
+        </div>
+
+
+
+    </div>
+
+
+    <!-- javascript code to handle markers, map and user interactions -->
+    <script>
+
+        // variables for the map
+        let map, geocoder;
+        let markers = [];
+
+        function initMap(){
+
+            // services used in implementing the direction
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer();
+
+           
+            // created the google map
+            map = new google.maps.Map(document.getElementById("map"),
+            {
+                center: {lat: 43.6531, lng: -79.3833},
+                zoom: 13,
+                mapId: "87291b2c5d90c2be"
+            });
+
+            // create a geocoder
+            geocoder = new google.maps.Geocoder();
+
+
+            // create a directions renderer
+            directionsRenderer.setMap(map);
+
+            // create a destination selection element
+            const destinationSelection = document.getElementById("destinationSelection");
+            
+            // create an info window
+            let infoWindow = new google.maps.InfoWindow();
+            
+            // loop through the coordinates array and create markers for each coordinate
+            for(let i = 0; i < coordinates.length; i++){
+                let new_marker = new google.maps.marker.AdvancedMarkerElement({
+                    map: map,
+                    position: {
+                        lat: coordinates[i].lat,
+                        lng: coordinates[i].lng
+                    },
+                    title: coordinates[i].title
+                });
+
+                // add the category to the marker
+                new_marker.category = coordinates[i].category;
+
+                // add the marker to the markers array
+                markers.push(new_marker);
+
+                // function to display the information of the marker
+                let marker_clicked = function() {
+
+                    infoWindow.close();
+                    infoWindow.setContent(coordinates[i].title + "</br>" + "Category: " + coordinates[i].category);
+                    infoWindow.open(map, new_marker);
+                    document.getElementById("details").innerHTML = coordinates[i].title;
+                    document.getElementById("category").innerHTML = coordinates[i].category;
+                    document.getElementById("address").innerHTML = coordinates[i].address;
+                    document.getElementById("description").innerHTML = coordinates[i].desc;
+                }
+
+                // event listener for the marker
+                new_marker.addListener('click', marker_clicked);
+
+                // add the destination to the select element
+                const option = document.createElement("option");
+                option.value = i;
+                option.text = coordinates[i].title;
+                destinationSelection.appendChild(option);
+
+                
+            }
+
+            // event listener for the show directions button
+            document.getElementById("showDirections").addEventListener("click", function(){
+                navigator.geolocation.getCurrentPosition(position => {
+                    calculateDistance(position);
+                });
+            });
+
+            // function to calculate the distance between the user's current location and the selected destination
+            function calculateDistance(userPositionOnMap){
+                const destinationValue = destinationSelection.value;
+                if(destinationValue === ""){
+                    alert("Please select a destination");
+                    return;
+                }
+
+                const destination = coordinates[destinationValue];
+
+                const request = {
+                    origin: {lat: userPositionOnMap.coords.latitude, lng: userPositionOnMap.coords.longitude},
+                    destination: {lat: destination.lat, lng: destination.lng},
+                    travelMode: 'DRIVING'
+                };
+
+                directionsService.route(request, function(result, status) {
+                    if (status == 'OK') {
+                        directionsRenderer.setDirections(result);
+                    } else {
+                        alert('Directions request failed due to ' + status);
+                    }
+                
+                });
+            }
+            
+        }
+
+        // event listener for the search address button
+        document.getElementById("searchUserAddress").addEventListener("click", userAddress);
+
+        // event listener for the locate me button
+        document.getElementById("locateMe").addEventListener("click", function(){
+            navigator.geolocation.getCurrentPosition(userPositionOnMap)
+        });
+
+        // function to get the user's current position
+        function userPositionOnMap(position){
+
+            const icon = document.createElement("img");
+            icon.src = "https://maps.google.com/mapfiles/kml/shapes/man.png";
+            let userLocation = new google.maps.marker.AdvancedMarkerElement({
+                map: map,
+                zoom: 20,
+                position: {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                },
+                title: "My Location",
+                content: icon
+            });
+        }
+     
+
+        // function to geocode an address entered by the user
+        function userAddress(){
+            let address = document.getElementById("userAddress").value;
+            geocoder.geocode( { "address": address}, function (res, stat){
+
+                if(stat == 'OK'){
+
+
+                    document.getElementById("coords").innerHTML = "coords: " + 
+                    res[0].geometry.location.lat() + ", " + 
+                    res[0].geometry.location.lng();
+
+                    const icon = document.createElement("img");
+                    icon.src = "https://maps.google.com/mapfiles/kml/shapes/man.png";
+                    const marker = new google.maps.marker.AdvancedMarkerElement({
+                        map: map,
+                        position: res[0].geometry.location,
+                        content: icon
+                    });
+
+                }else{
+                    alert('Geocode was not successful for the following reason: ' + stat);
+                }
+            });
+                   
+        }
+
+
+
+        
+        // function to filter attractions
+        function filterAttractions(){
+            for (i = 0; i < markers.length; i++){
+                if(markers[i].category == "Attractions")
+                    markers[i].position = {
+                        lat: coordinates[i].lat,
+                        lng: coordinates[i].lng
+                    };
+                else
+                markers[i].position = null;
+                
+            }
+        }
+        // event listener for the show attractions button
+        document.getElementById("showAttractions").addEventListener("click", filterAttractions);
+
+
+        // function to filter subway stations
+        function filterSubwayStations(){
+            for (i = 0; i < markers.length; i++){
+                if(markers[i].category == "Subway Stations")
+                    markers[i].position = {
+                        lat: coordinates[i].lat,
+                        lng: coordinates[i].lng
+                    };
+                else
+                markers[i].position = null;
+                
+            }
+        }
+        // event listener for the show subway stations button
+        document.getElementById("showStations").addEventListener("click", filterSubwayStations);
+
+
+        // function to show all the markers
+        function showAll()
+        {
+          for (i = 0; i < markers.length; i++) 
+          {
+            markers[i].position = {lat: coordinates[i].lat,  
+                                   lng: coordinates[i].lng
+                                  };
+          }
+        }
+        // event listener for the show all button
+        document.getElementById("showAll").addEventListener("click", showAll);
+
+    </script>
+
+
+    
+</body>
+</html>
